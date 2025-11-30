@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -35,6 +36,7 @@ import UserForm from './UserForm';
 import UserDialog from './UserDialog';
 import { applySortFilter, getComparator } from '../../../utils/tableOperations';
 import { apiUrl, methods, routes } from '../../../constants';
+import { fetchProvinces } from '../../../store/slices/action';
 
 // ----------------------------------------------------------------------
 
@@ -45,6 +47,7 @@ const TABLE_HEAD = [
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Phone', alignRight: false },
   { id: 'role', label: 'Role', alignRight: false },
+  { id: 'province', label: 'Province', alignRight: false },
   { id: '', label: '', alignRight: false },
 ];
 
@@ -52,6 +55,9 @@ const TABLE_HEAD = [
 
 const UserPage = () => {
   const { tokens } = useAuth();
+  const dispatch = useDispatch();
+  const { provinces } = useSelector((state) => state.provinces);
+  
   // State variables
   // Table
 
@@ -69,6 +75,7 @@ const UserPage = () => {
     password: '',
     phone: '',
     role: '',
+    provinceId: '',
   });
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -81,6 +88,9 @@ const UserPage = () => {
   // Load data on initial page load
   useEffect(() => {
     getAllUsers();
+    if (tokens) {
+      dispatch(fetchProvinces(tokens.access.token));
+    }
   }, []);
 
   // API operations
@@ -104,6 +114,10 @@ const UserPage = () => {
   };
 
   const addUser = () => {
+    if (user.role === 'user' && !user.provinceId) {
+      toast.error('Please select a province for province user');
+      return;
+    }
     axios
       .post(apiUrl(routes.USER), user, {
         headers: {
@@ -122,6 +136,10 @@ const UserPage = () => {
   };
 
   const updateUser = () => {
+    if (user.role === 'user' && !user.provinceId) {
+      toast.error('Please select a province for province user');
+      return;
+    }
     axios
       .patch(apiUrl(routes.USER, selectedUserId, selectedUserId), user, {
         headers: {
@@ -172,6 +190,7 @@ const UserPage = () => {
       password: '',
       phone: '',
       role: '',
+      provinceId: '',
     });
   };
 
@@ -285,6 +304,23 @@ const UserPage = () => {
                             )}
                           </TableCell>
 
+                          <TableCell align="left">
+                            {user.role === 'user' && user.provinceId ? (
+                              (() => {
+                                const userProvince = provinces.find(
+                                  (p) => (p.id || p._id) === user.provinceId
+                                );
+                                return userProvince ? (
+                                  <Label color="info">{userProvince.name}</Label>
+                                ) : (
+                                  <Label color="default">N/A</Label>
+                                );
+                              })()
+                            ) : (
+                              <Label color="default">-</Label>
+                            )}
+                          </TableCell>
+
                           <TableCell align="right">
                             <IconButton
                               size="large"
@@ -368,6 +404,7 @@ const UserPage = () => {
         setUser={setUser}
         handleAddUser={addUser}
         handleUpdateUser={updateUser}
+        provinces={provinces}
       />
 
       <UserDialog

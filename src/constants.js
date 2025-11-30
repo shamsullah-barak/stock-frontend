@@ -4,6 +4,9 @@ const routes = {
   BACKUP: 'backup',
   AUTH: 'auth',
   USER: 'users',
+  STOCK: 'stocks',
+  STOCK_REQUEST: 'stock-requests',
+  PROVINCE: 'provinces',
 };
 
 const methods = {

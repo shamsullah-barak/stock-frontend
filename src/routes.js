@@ -6,6 +6,7 @@ import UsersPage from './sections/@dashboard/user/UserPage';
 import { useAuth } from './hooks/useAuth';
 import Stocks from './sections/@dashboard/stocks';
 import ManageStocks from './sections/@dashboard/stocks/manageStocks';
+import ProvincePage from './sections/@dashboard/provinces/ProvincePage';
 
 // ----------------------------------------------------------------------
 
@@ -18,6 +19,7 @@ export default function Router() {
       element: <MainDashboard />,
       children: [
         { path: 'users', element: <UsersPage /> },
+        { path: 'provinces', element: <ProvincePage /> },
         { path: 'manage-stocks', element: <Stocks /> },
       ],
     },

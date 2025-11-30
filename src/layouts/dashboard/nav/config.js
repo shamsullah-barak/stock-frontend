@@ -10,8 +10,8 @@ import { FiBookOpen, FiCheckCircle, FiUsers, FiDownloadCloud, FiChevronDown, FiC
 
 export const userNavConfig = [
   {
-    title: 'Stocks',
-    path: '/stocks',
+    title: 'Manage Stock Requests',
+    path: '/manage-stocks',
     icon: <FiUsers />,
   },
 ];
@@ -23,6 +23,11 @@ export const adminNavConfig = [
     icon: <FiUsers />,
   },
   {
+    title: 'Provinces',
+    path: '/provinces',
+    icon: <FiUsers />,
+  },
+  {
     title: 'Manage Stocks',
     path: '/manage-stocks',
     icon: <FiUsers />,
@@ -31,8 +36,8 @@ export const adminNavConfig = [
 
 export const customerNavConfig = [
   {
-    title: 'Manage Stocks',
-    path: '/manage-stocks',
+    title: 'My Stocks',
+    path: '/stocks',
     icon: <FiUsers />,
   },
 ];

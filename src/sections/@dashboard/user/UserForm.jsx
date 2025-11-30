@@ -12,11 +12,15 @@ import {
   Stack,
   TextField,
   Typography,
+  Select,
+  InputLabel,
+  MenuItem,
 } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 import Iconify from '../../../components/iconify';
 
-const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, handleAddUser, handleUpdateUser }) => {
+const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, handleAddUser, handleUpdateUser, provinces = [] }) => {
   const style = {
     position: 'absolute',
     top: '50%',
@@ -105,7 +109,7 @@ const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, 
                 aria-labelledby="available-label"
                 defaultValue={user.role}
                 name="radio-buttons-group"
-                onChange={(e) => setUser({ ...user, role: e.target.value })}
+                onChange={(e) => setUser({ ...user, role: e.target.value, provinceId: e.target.value === 'user' ? user.provinceId : undefined })}
                 // onChange={(e) => console.log({ e: e.target.value })}
               >
                 <Grid container spacing={0}>
@@ -129,12 +133,31 @@ const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, 
               </RadioGroup>
             </FormControl>
 
+            {user.role === 'user' && (
+              <FormControl fullWidth required>
+                <InputLabel id="province-select-label">Province</InputLabel>
+                <Select
+                  labelId="province-select-label"
+                  id="province-select"
+                  value={user.provinceId || ''}
+                  label="Province"
+                  onChange={(e) => setUser({ ...user, provinceId: e.target.value })}
+                >
+                  {provinces.map((province) => (
+                    <MenuItem key={province.id || province._id} value={province.id || province._id}>
+                      {province.name} ({province.code})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
             <TextField
               name="password"
               type="password"
               label="Password"
               value={user.password}
-              required
+              required={!isUpdateForm}
               onChange={(e) => setUser({ ...user, password: e.target.value })}
             />
 
@@ -176,6 +199,7 @@ UserForm.propTypes = {
   setUser: PropTypes.func,
   handleAddUser: PropTypes.func,
   handleUpdateUser: PropTypes.func,
+  provinces: PropTypes.array,
 };
 
 export default UserForm;
