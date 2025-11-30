@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import PropTypes from 'prop-types';
 import { MdCategory } from 'react-icons/md';
@@ -17,8 +17,8 @@ export default function NavSection({ data = [], innerData = [], ...other }) {
   return (
     <Box {...other}>
       <List disablePadding sx={{ p: 1 }}>
-        {data.map((item) => (
-          <>
+        {data.map((item, index) => (
+          <Fragment key={index}>
             {item.title === 'Categories' ? (
               <>
                 <NavButton key={item.title} item={item} collapse={collapse} setCollapse={setCollapse} />
@@ -35,7 +35,7 @@ export default function NavSection({ data = [], innerData = [], ...other }) {
                 <NavItem key={item.title} item={item} />
               </>
             )}
-          </>
+          </Fragment>
         ))}
       </List>
     </Box>

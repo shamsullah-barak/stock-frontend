@@ -12,7 +12,7 @@ import useResponsive from '../../../hooks/useResponsive';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
-import navConfig from './config';
+import { adminNavConfig, customerNavConfig, userNavConfig } from './config';
 import { useAuth } from '../../../hooks/useAuth';
 
 // ----------------------------------------------------------------------
@@ -83,7 +83,20 @@ export default function Nav({ openNav, onCloseNav }) {
         </Link>
       </Box>
 
-      <NavSection data={navConfig} innerData={categories} collapse={collapse} setCollapse={setCollapse} />
+      <NavSection
+        data={
+          user.role === 'admin'
+            ? adminNavConfig
+            : user.role === 'user'
+            ? userNavConfig
+            : user.role === 'customer'
+            ? customerNavConfig
+            : []
+        }
+        innerData={categories}
+        collapse={collapse}
+        setCollapse={setCollapse}
+      />
 
       <Box sx={{ flexGrow: 1 }} />
     </Scrollbar>

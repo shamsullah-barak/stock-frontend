@@ -13,6 +13,23 @@ export const AuthProvider = ({ children }) => {
   const login = async (data) => {
     setUser(data?.user);
     setTokens(data?.tokens);
+    // navigate('/users', { replace: true });
+    if (user) {
+      if (user.role === 'admin') {
+        return navigate('/users', { replace: true });
+      }
+
+      if (user.role === 'customer') {
+        // return <Navigate to={'/stocks'} replace />;
+        return navigate('/stocks', { replace: true });
+      }
+
+      if (user.role === 'user') {
+        // return <Navigate to={'/manage-stocks'} replace />;
+        navigate('/manage-stocks', { replace: true });
+      }
+    }
+
     navigate('/users', { replace: true });
   };
 
