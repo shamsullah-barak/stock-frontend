@@ -54,6 +54,7 @@ const UserPage = () => {
   const { tokens } = useAuth();
   // State variables
   // Table
+
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
@@ -67,7 +68,7 @@ const UserPage = () => {
     email: '',
     password: '',
     phone: '',
-    isAdmin: false,
+    role: '',
   });
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -170,7 +171,7 @@ const UserPage = () => {
       email: '',
       password: '',
       phone: '',
-      isAdmin: false,
+      role: '',
     });
   };
 
@@ -273,10 +274,14 @@ const UserPage = () => {
                           <TableCell align="left">{user.phone}</TableCell>
 
                           <TableCell align="left">
-                            {user.isAdmin ? (
-                              <Label color="warning">Librarian</Label>
+                            {user.role === 'admin' ? (
+                              <Label color="warning">Admin</Label>
+                            ) : user.role === 'customer' ? (
+                              <Label color="success">Customer</Label>
+                            ) : user.role === 'user' ? (
+                              <Label color="success">Province Member</Label>
                             ) : (
-                              <Label color="success">Member</Label>
+                              <Label color="success" />
                             )}
                           </TableCell>
 

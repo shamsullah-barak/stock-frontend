@@ -103,24 +103,25 @@ const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, 
               <RadioGroup
                 sx={{ paddingTop: '10px' }}
                 aria-labelledby="available-label"
-                defaultValue={user.isAdmin}
+                defaultValue={user.role}
                 name="radio-buttons-group"
-                onChange={(e) => setUser({ ...user, isAdmin: e.target.value })}
+                onChange={(e) => setUser({ ...user, role: e.target.value })}
+                // onChange={(e) => console.log({ e: e.target.value })}
               >
                 <Grid container spacing={0}>
                   <Grid item xs={12} md={6} paddingRight={1}>
                     <FormControlLabel
-                      value
+                      value="customer"
                       control={<Radio />}
-                      label="Librarian"
+                      label="Customer"
                       sx={{ textAlign: 'center', justifyContent: 'center', width: '100%' }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6} paddingLeft={1}>
                     <FormControlLabel
-                      value={false}
+                      value="user"
                       control={<Radio />}
-                      label="Member"
+                      label="Province"
                       sx={{ textAlign: 'center', justifyContent: 'center', width: '100%' }}
                     />
                   </Grid>
