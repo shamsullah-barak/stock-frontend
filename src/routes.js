@@ -4,17 +4,22 @@ import LoginPage from './sections/auth/login/LoginPage';
 import Page404 from './pages/Page404';
 import UsersPage from './sections/@dashboard/user/UserPage';
 import { useAuth } from './hooks/useAuth';
+import Stocks from './sections/@dashboard/stocks';
+import ManageStocks from './sections/@dashboard/stocks/manageStocks';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
   const { user } = useAuth();
 
-  const memberRoutes = useRoutes([
+  const adminRoutes = useRoutes([
     {
       path: '/',
       element: <MainDashboard />,
-      children: [{ path: 'users', element: <UsersPage /> }],
+      children: [
+        { path: 'users', element: <UsersPage /> },
+        { path: 'manage-stocks', element: <Stocks /> },
+      ],
     },
     {
       path: 'login',
@@ -24,10 +29,51 @@ export default function Router() {
       path: '404',
       element: <Page404 />,
     },
+    // {
+    //   path: '*',
+    //   element: <Navigate to="/404" replace />,
+    // },
+  ]);
+
+  const provinceUserRoutes = useRoutes([
     {
-      path: '*',
-      element: <Navigate to="/404" replace />,
+      path: '/',
+      element: <MainDashboard />,
+
+      children: [{ path: 'manage-stocks', element: <ManageStocks /> }],
     },
+    {
+      path: 'login',
+      element: <LoginPage />,
+    },
+    {
+      path: '404',
+      element: <Page404 />,
+    },
+    // {
+    //   path: '*',
+    //   element: <Navigate to="/404" replace />,
+    // },
+  ]);
+
+  const customerRoutes = useRoutes([
+    {
+      path: '/',
+      element: <MainDashboard />,
+      children: [{ path: 'stocks', element: <Stocks /> }],
+    },
+    {
+      path: 'login',
+      element: <LoginPage />,
+    },
+    {
+      path: '404',
+      element: <Page404 />,
+    },
+    // {
+    //   path: '*',
+    //   element: <Navigate to="/404" replace />,
+    // },
   ]);
 
   const guestRoutes = useRoutes([
@@ -44,5 +90,17 @@ export default function Router() {
   if (!user) {
     return guestRoutes;
   }
-  return memberRoutes;
+
+  if (user.role === 'admin') {
+    return adminRoutes;
+  }
+
+  if (user.role === 'user') {
+    return provinceUserRoutes;
+  }
+
+  if (user.role === 'customer') {
+    return customerRoutes;
+  }
+  // return adminRoutes;
 }

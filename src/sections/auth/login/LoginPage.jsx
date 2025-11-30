@@ -56,7 +56,15 @@ export default function LoginPage() {
   }, []);
 
   if (user) {
-    return <Navigate to={'/users'} replace />;
+    if (user.role === 'admin') {
+      return <Navigate to={'/users'} replace />;
+    }
+
+    if (user.role === 'customer') {
+      return <Navigate to={'/stocks'} replace />;
+    }
+
+    if (user.role === 'user') return <Navigate to={'/manage-stocks'} replace />;
   }
 
   const loginUser = (email, password) => {
