@@ -71,14 +71,14 @@ const Stocks = () => {
 
   // Load data on initial page load
   useEffect(() => {
-    if (user && user.provinceId) {
+    if (user && user.province_id) {
       loadStocks();
     }
   }, [user]);
 
   const loadStocks = () => {
-    if (user && user.id && user.provinceId && tokens) {
-      dispatch(fetchCustomerStocks(user.id, user.provinceId, tokens.access.token));
+    if (user && user.id && user.province_id && tokens) {
+      dispatch(fetchCustomerStocks(user.id, user.province_id, tokens.access.token));
     }
   };
 
@@ -129,7 +129,7 @@ const Stocks = () => {
 
       const requestPayload = {
         request_type: 'add',
-        province_id: user.provinceId,
+        province_id: user.province_id,
         item: requestData.itemName,
         quantity: parseInt(requestData.quantity, 10),
       };
@@ -151,7 +151,7 @@ const Stocks = () => {
 
       const requestPayload = {
         request_type: 'remove',
-        province_id: user.provinceId,
+        province_id: user.province_id,
         item: selectedStock.itemName,
         quantity: parseInt(requestData.quantity, 10),
       };
@@ -189,18 +189,14 @@ const Stocks = () => {
       </Helmet>
 
       <Container>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+        {/* <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h3" gutterBottom>
             My Stocks
           </Typography>
-          <Button
-            variant="contained"
-            onClick={handleOpenAddDialog}
-            startIcon={<Iconify icon="eva:plus-fill" />}
-          >
+          <Button variant="contained" onClick={handleOpenAddDialog} startIcon={<Iconify icon="eva:plus-fill" />}>
             Request Add Stock
           </Button>
-        </Stack>
+        </Stack> */}
 
         {loading ? (
           <Grid container justifyContent="center" style={{ padding: '40px' }}>
@@ -226,27 +222,25 @@ const Stocks = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredStocks
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((stock) => (
-                          <TableRow hover key={stock.id || stock._id} tabIndex={-1}>
-                            <TableCell align="left">{stock.itemName}</TableCell>
-                            <TableCell align="left">
-                              <Chip label={stock.quantity} color="primary" variant="outlined" />
-                            </TableCell>
-                            <TableCell align="left">{stock.unit}</TableCell>
-                            <TableCell align="left">{stock.provinceName || user.provinceName}</TableCell>
-                            <TableCell align="right">
-                              <IconButton
-                                color="error"
-                                onClick={() => handleOpenRemoveDialog(stock)}
-                                disabled={stock.quantity === 0}
-                              >
-                                <Remove />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                      {filteredStocks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((stock) => (
+                        <TableRow hover key={stock.id || stock._id} tabIndex={-1}>
+                          <TableCell align="left">{stock.itemName}</TableCell>
+                          <TableCell align="left">
+                            <Chip label={stock.quantity} color="primary" variant="outlined" />
+                          </TableCell>
+                          <TableCell align="left">{stock.unit}</TableCell>
+                          <TableCell align="left">{stock.provinceName || user.provinceName}</TableCell>
+                          <TableCell align="right">
+                            <IconButton
+                              color="error"
+                              onClick={() => handleOpenRemoveDialog(stock)}
+                              disabled={stock.quantity === 0}
+                            >
+                              <Remove />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </TableContainer>

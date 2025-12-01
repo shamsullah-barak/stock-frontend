@@ -30,34 +30,38 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
+import axios from 'axios';
 import { Check, Close } from '@mui/icons-material';
 import { useAuth } from '../../../hooks/useAuth';
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
 import Label from '../../../components/label';
 import { fetchStockRequests, updateStockRequest } from '../../../store/slices/action';
+import { apiUrl, routes } from '../../../constants';
 import { applySortFilter, getComparator } from '../../../utils/tableOperations';
+import StockForm from './stock.form';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'type', label: 'Type', alignRight: false },
+  // { id: 'type', label: 'Type', alignRight: false },
   { id: 'customerName', label: 'Customer', alignRight: false },
   { id: 'itemName', label: 'Item Name', alignRight: false },
   { id: 'quantity', label: 'Quantity', alignRight: false },
-  { id: 'unit', label: 'Unit', alignRight: false },
-  { id: 'notes', label: 'Notes', alignRight: false },
+  // { id: 'unit', label: 'Unit', alignRight: false },
+  // { id: 'notes', label: 'Notes', alignRight: false },
   { id: 'date', label: 'Date', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
-  { id: 'actions', label: 'Actions', alignRight: false },
+  { id: 'actions', label: 'Actions', alignRight: true },
 ];
 
 // ----------------------------------------------------------------------
 
 const ManageStocks = () => {
-  const { user, tokens } = useAuth();
+  const { tokens } = useAuth();
   const dispatch = useDispatch();
   const { requests, loading } = useSelector((state) => state.stockRequests);
+  // const loading = false;
 
   // State variables
   const [page, setPage] = useState(0);
@@ -71,18 +75,18 @@ const ManageStocks = () => {
   const [actionType, setActionType] = useState(''); // 'approve' or 'reject'
 
   // Load data on initial page load
-  useEffect(() => {
-    if (user && user.provinceId) {
-      loadRequests();
-    }
-  }, [user, statusFilter]);
+  // useEffect(() => {
+  //   if (stock && stock.province_id) {
+  //     loadRequests();
+  //   }
+  // }, [stock, statusFilter]);
 
-  const loadRequests = () => {
-    if (user && user.provinceId && tokens) {
-      const status = statusFilter === 'all' ? undefined : statusFilter;
-      dispatch(fetchStockRequests(user.provinceId, status, tokens.access.token));
-    }
-  };
+  // const loadRequests = () => {
+  //   if (stock && stock.province_id && tokens) {
+  //     const status = statusFilter === 'all' ? undefined : statusFilter;
+  //     dispatch(fetchStockRequests(stock.province_id, status, tokens.access.token));
+  //   }
+  // };
 
   const handleOpenConfirmDialog = (request, action) => {
     setSelectedRequest(request);
@@ -97,39 +101,39 @@ const ManageStocks = () => {
   };
 
   const handleConfirmRequest = async () => {
-    try {
-      const newStatus = actionType === 'approve' ? 'approved' : 'rejected';
-      await dispatch(
-        updateStockRequest(selectedRequest.id || selectedRequest._id, newStatus, tokens.access.token)
-      ).unwrap();
-      toast.success(`Request ${actionType === 'approve' ? 'approved' : 'rejected'} successfully`);
-      handleCloseConfirmDialog();
-      loadRequests();
-    } catch (error) {
-      toast.error(error.response?.data?.message || `Failed to ${actionType} request`);
-    }
+    // try {
+    //   const newStatus = actionType === 'approve' ? 'approved' : 'rejected';
+    //   await dispatch(
+    //     updateStockRequest(selectedRequest.id || selectedRequest._id, newStatus, tokens.access.token)
+    //   ).unwrap();
+    //   toast.success(`Request ${actionType === 'approve' ? 'approved' : 'rejected'} successfully`);
+    //   handleCloseConfirmDialog();
+    //   loadRequests();
+    // } catch (error) {
+    //   toast.error(error.response?.data?.message || `Failed to ${actionType} request`);
+    // }
   };
 
   // Table functions
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  // const handleRequestSort = (event, property) => {
+  //   const isAsc = orderBy === property && order === 'asc';
+  //   setOrder(isAsc ? 'desc' : 'asc');
+  //   setOrderBy(property);
+  // };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+  // const handleChangePage = (event, newPage) => {
+  //   setPage(newPage);
+  // };
 
-  const handleChangeRowsPerPage = (event) => {
-    setPage(0);
-    setRowsPerPage(parseInt(event.target.value, 10));
-  };
+  // const handleChangeRowsPerPage = (event) => {
+  //   setPage(0);
+  //   setRowsPerPage(parseInt(event.target.value, 10));
+  // };
 
-  const handleStatusFilterChange = (event) => {
-    setStatusFilter(event.target.value);
-    setPage(0);
-  };
+  // const handleStatusFilterChange = (event) => {
+  //   setStatusFilter(event.target.value);
+  //   setPage(0);
+  // };
 
   const filteredRequests = applySortFilter(requests, getComparator(order, orderBy), filterName);
 
@@ -150,6 +154,90 @@ const ManageStocks = () => {
     return type === 'add' ? 'success' : 'error';
   };
 
+  const [isUpdateForm, setIsUpdateForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [stocks, setStocks] = useState([]);
+  const [stock, setStock] = useState({
+    name: '',
+    dob: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: '',
+    province_id: '',
+  });
+  const [selectedStockId, setSelectedStockId] = useState(null);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // const addStock = () => {
+  //   if (stock.role === 'stock' && !stock.province_id) {
+  //     toast.error('Please select a province for province stock');
+  //     return;
+  //   }
+  //   axios
+  //     .post(apiUrl(routes.USER), stock, {
+  //       headers: {
+  //         Authorization: `Bearer ${tokens.access.token}`,
+  //       },
+  //     })
+  //     .then((response) => {
+  //       toast.success('Stock added');
+  //       handleCloseModal();
+  //       getAllStocks();
+  //       // clearForm();
+  //     })
+  //     .catch((error) => {
+  //       toast.error(error.response.data.message ?? 'Something went wrong, please try again');
+  //     });
+  // };
+
+  const getAllStocks = () => {
+    axios
+      .get(apiUrl(routes.STOCK), {
+        headers: {
+          Authorization: `Bearer ${tokens.access.token}`,
+        },
+      })
+      .then((response) => {
+        setStocks(response.data.results);
+        // setIsTableLoading(false);
+      })
+      .catch((error) => {
+        // handle error
+        toast.error(error.response.message ?? 'error getting users');
+      });
+  };
+
+  const updateStock = () => {
+    if (stock.role === 'stock' && !stock.province_id) {
+      toast.error('Please select a province for province stock');
+      return;
+    }
+    axios
+      .patch(apiUrl(routes.USER, selectedStockId, selectedStockId), stock, {
+        headers: {
+          Authorization: `Bearer ${tokens.access.token}`,
+        },
+      })
+      .then((response) => {
+        toast.success('Stock updated');
+        handleCloseModal();
+        // handleCloseMenu();
+        getAllStocks();
+        // clearForm();
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message ?? 'Something went wrong, please try again');
+      });
+  };
+
   return (
     <>
       <Helmet>
@@ -158,10 +246,10 @@ const ManageStocks = () => {
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h3" gutterBottom>
-            Manage Stock Requests
-          </Typography>
-          <FormControl sx={{ minWidth: 200 }}>
+          <Typography variant="h3" gutterBottom />
+          {/* Manage Stock Requests */}
+          {/* </Typography> */}
+          {/* <FormControl sx={{ minWidth: 200 }}>
             <InputLabel>Filter by Status</InputLabel>
             <Select value={statusFilter} label="Filter by Status" onChange={handleStatusFilterChange}>
               <MenuItem value="pending">Pending</MenuItem>
@@ -169,7 +257,17 @@ const ManageStocks = () => {
               <MenuItem value="rejected">Rejected</MenuItem>
               <MenuItem value="all">All</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> */}
+          <Button
+            variant="contained"
+            onClick={() => {
+              setIsUpdateForm(false);
+              handleOpenModal();
+            }}
+            startIcon={<Iconify icon="eva:plus-fill" />}
+          >
+            New Stock
+          </Button>
         </Stack>
 
         {loading ? (
@@ -196,66 +294,53 @@ const ManageStocks = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredRequests
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((request) => (
-                          <TableRow hover key={request.id || request._id} tabIndex={-1}>
-                            <TableCell align="left">
-                              <Chip
-                                label={request.type === 'add' ? 'Add' : 'Remove'}
-                                color={getTypeColor(request.type)}
-                                size="small"
-                              />
-                            </TableCell>
-                            <TableCell align="left">
-                              {request.customerName || request.customer?.name || 'N/A'}
-                            </TableCell>
-                            <TableCell align="left">{request.itemName}</TableCell>
-                            <TableCell align="left">
-                              <Chip label={request.quantity} color="primary" variant="outlined" />
-                            </TableCell>
-                            <TableCell align="left">{request.unit}</TableCell>
-                            <TableCell align="left">
-                              {request.notes ? (
-                                <Typography variant="body2" sx={{ maxWidth: 200 }} noWrap>
-                                  {request.notes}
-                                </Typography>
-                              ) : (
-                                '-'
-                              )}
-                            </TableCell>
-                            <TableCell align="left">
-                              {request.createdAt
-                                ? new Date(request.createdAt).toLocaleDateString()
-                                : new Date(request.date).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell align="left">
-                              <Label color={getStatusColor(request.status)}>
-                                {request.status?.toUpperCase() || 'PENDING'}
-                              </Label>
-                            </TableCell>
-                            <TableCell align="right">
-                              {request.status === 'pending' && (
-                                <Stack direction="row" spacing={1} justifyContent="flex-end">
-                                  <IconButton
-                                    color="success"
-                                    size="small"
-                                    onClick={() => handleOpenConfirmDialog(request, 'approve')}
-                                  >
-                                    <Check />
-                                  </IconButton>
-                                  <IconButton
-                                    color="error"
-                                    size="small"
-                                    onClick={() => handleOpenConfirmDialog(request, 'reject')}
-                                  >
-                                    <Close />
-                                  </IconButton>
-                                </Stack>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                      {filteredRequests.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((request) => (
+                        <TableRow hover key={request.id || request._id} tabIndex={-1}>
+                          <TableCell align="left">
+                            <Chip
+                              label={request.type === 'add' ? 'Add' : 'Remove'}
+                              color={getTypeColor(request.type)}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell align="left">{request.customerName || request.customer?.name || 'N/A'}</TableCell>
+                          <TableCell align="left">{request.item_name}</TableCell>
+                          <TableCell align="left">
+                            <Chip label={request.quantity} color="primary" variant="outlined" />
+                          </TableCell>
+
+                          {/* <TableCell align="left">
+                            {request.createdAt
+                              ? new Date(request.createdAt).toLocaleDateString()
+                              : new Date(request.date).toLocaleDateString()}
+                          </TableCell> */}
+                          <TableCell align="left">
+                            <Label color={getStatusColor(request.status)}>
+                              {request.status?.toUpperCase() || 'PENDING'}
+                            </Label>
+                          </TableCell>
+                          <TableCell align="right">
+                            {request.status === 'pending' && (
+                              <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                <IconButton
+                                  color="success"
+                                  size="small"
+                                  onClick={() => handleOpenConfirmDialog(request, 'approve')}
+                                >
+                                  <Check />
+                                </IconButton>
+                                <IconButton
+                                  color="error"
+                                  size="small"
+                                  onClick={() => handleOpenConfirmDialog(request, 'reject')}
+                                >
+                                  <Close />
+                                </IconButton>
+                              </Stack>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -265,7 +350,7 @@ const ManageStocks = () => {
                 </Alert>
               )}
             </Scrollbar>
-            {requests && requests.length > 0 && (
+            {/* {requests && requests.length > 0 && (
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
@@ -275,16 +360,14 @@ const ManageStocks = () => {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />
-            )}
+            )} */}
           </Card>
         )}
       </Container>
 
       {/* Confirm/Reject Dialog */}
       <Dialog open={isConfirmDialogOpen} onClose={handleCloseConfirmDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {actionType === 'approve' ? 'Approve' : 'Reject'} Stock Request
-        </DialogTitle>
+        <DialogTitle>{actionType === 'approve' ? 'Approve' : 'Reject'} Stock Request</DialogTitle>
         <DialogContent>
           {selectedRequest && (
             <Stack spacing={2} sx={{ mt: 1 }}>
@@ -349,6 +432,17 @@ const ManageStocks = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <StockForm
+        isUpdateForm={isUpdateForm}
+        isModalOpen={isModalOpen}
+        handleCloseModal={handleCloseModal}
+        id={selectedStockId}
+        stock={stock}
+        setStocks={setStock}
+        // handleAddStock={addStock}
+        handleUpdateStock={updateStock}
+      />
     </>
   );
 };

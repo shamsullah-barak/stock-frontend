@@ -130,8 +130,8 @@ const ProvincePage = () => {
       });
   };
 
-  const deleteProvinceHandler = (provinceId) => {
-    dispatch(deleteProvince(provinceId, tokens.access.token))
+  const deleteProvinceHandler = (province_id) => {
+    dispatch(deleteProvince(province_id, tokens.access.token))
       .then(() => {
         toast.success('Province deleted');
         handleCloseDialog();

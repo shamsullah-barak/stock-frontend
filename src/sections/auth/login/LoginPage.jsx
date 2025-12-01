@@ -68,7 +68,6 @@ export default function LoginPage() {
   }
 
   const loginUser = (email, password) => {
-    // return console.log({ email, password });
     if (email === '' || password === '') {
       toast.error('Please enter email and password');
     } else {

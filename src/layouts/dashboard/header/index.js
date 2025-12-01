@@ -3,9 +3,13 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { AppBar, Box, IconButton, Stack, Toolbar } from '@mui/material';
 import { MenuOpen } from '@mui/icons-material';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 // utils
 import { bgBlur } from '../../../utils/cssStyles';
 import AccountPopover from './AccountPopover';
+import { fetchCustomers, fetchProvinces, fetchStockRequests, fetchUsers } from '../../../store/slices/action';
+import { useAuth } from '../../../hooks/useAuth';
 
 // ----------------------------------------------------------------------
 
@@ -46,6 +50,19 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const dispatch = useDispatch();
+  const { tokens } = useAuth();
+
+  useEffect(() => {
+    const loadData = () => {
+      dispatch(fetchProvinces(tokens.access.token));
+      dispatch(fetchCustomers(tokens.access.token));
+      dispatch(fetchUsers(tokens.access.token));
+      dispatch(fetchStockRequests(tokens.access.token));
+    };
+    loadData();
+  });
+
   return (
     <StyledRoot>
       <StyledToolbar>

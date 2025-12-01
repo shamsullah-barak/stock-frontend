@@ -57,7 +57,7 @@ const UserPage = () => {
   const { tokens } = useAuth();
   const dispatch = useDispatch();
   const { provinces } = useSelector((state) => state.provinces);
-  
+
   // State variables
   // Table
 
@@ -75,7 +75,7 @@ const UserPage = () => {
     password: '',
     phone: '',
     role: '',
-    provinceId: '',
+    province_id: '',
   });
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -114,7 +114,7 @@ const UserPage = () => {
   };
 
   const addUser = () => {
-    if (user.role === 'user' && !user.provinceId) {
+    if (user.role === 'user' && !user.province_id) {
       toast.error('Please select a province for province user');
       return;
     }
@@ -136,7 +136,7 @@ const UserPage = () => {
   };
 
   const updateUser = () => {
-    if (user.role === 'user' && !user.provinceId) {
+    if (user.role === 'user' && !user.province_id) {
       toast.error('Please select a province for province user');
       return;
     }
@@ -190,7 +190,7 @@ const UserPage = () => {
       password: '',
       phone: '',
       role: '',
-      provinceId: '',
+      province_id: '',
     });
   };
 
@@ -305,11 +305,9 @@ const UserPage = () => {
                           </TableCell>
 
                           <TableCell align="left">
-                            {user.role === 'user' && user.provinceId ? (
+                            {user.role === 'user' && user.province_id ? (
                               (() => {
-                                const userProvince = provinces.find(
-                                  (p) => (p.id || p._id) === user.provinceId
-                                );
+                                const userProvince = provinces.find((p) => (p.id || p._id) === user.province_id);
                                 return userProvince ? (
                                   <Label color="info">{userProvince.name}</Label>
                                 ) : (
