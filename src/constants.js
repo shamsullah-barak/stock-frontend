@@ -1,7 +1,6 @@
 const backendApiUrl = 'http://localhost:5000/api';
 
 const routes = {
-  BACKUP: 'backup',
   AUTH: 'auth',
   USER: 'users',
   STOCK: 'stocks',

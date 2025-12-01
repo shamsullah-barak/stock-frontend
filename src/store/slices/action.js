@@ -4,35 +4,34 @@ import { categoryActions } from './categories';
 import { stockActions } from './stocks';
 import { stockRequestActions } from './stockRequests';
 import { provinceActions } from './provinces';
+import { customerActions } from './customers';
+import { userActions } from './users';
 
 export const fetchCategories = () => {
   return async (dispatch, getState) => {
-    try {
-      const response = await axios.get(apiUrl(routes.CATEGORY), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = response.data.map((item) => {
-        return {
-          ...item,
-          path: `/category/${item.id}`,
-        };
-      });
-      dispatch(categoryActions.setCategories(data));
-    } catch (error) {
-      console.log(error);
-    }
+    // try {
+    const response = await axios.get(apiUrl(routes.CATEGORY), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = response.data.map((item) => {
+      return {
+        ...item,
+        path: `/category/${item.id}`,
+      };
+    });
+    dispatch(categoryActions.setCategories(data));
   };
 };
 
 // Stock Actions
-export const fetchCustomerStocks = (customerId, provinceId, token) => {
+export const fetchCustomerStocks = (customerId, province_id, token) => {
   return async (dispatch, getState) => {
     try {
       dispatch(stockActions.setLoading(true));
       const response = await axios.get(apiUrl(routes.STOCK), {
-        params: { customerId, provinceId },
+        params: { customerId, province_id },
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -50,26 +49,26 @@ export const fetchCustomerStocks = (customerId, provinceId, token) => {
 
 export const createStockRequest = (requestData, token) => {
   return async (dispatch, getState) => {
-    try {
-      const response = await axios.post(apiUrl(routes.STOCK_REQUEST), requestData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      dispatch(stockRequestActions.addRequest(response.data));
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    // try {
+    const response = await axios.post(apiUrl(routes.STOCK_REQUEST), requestData, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    dispatch(stockRequestActions.addRequest(response.data));
+    return response.data;
+    // } catch (error) {
+    //   throw error;
+    // }
   };
 };
 
-export const fetchStockRequests = (provinceId, status = 'pending', token) => {
+export const fetchStockRequests = (token, status = 'pending') => {
   return async (dispatch, getState) => {
     try {
       dispatch(stockRequestActions.setLoading(true));
-      const params = { provinceId };
+      const params = {};
       if (status) {
         params.status = status;
       }
@@ -92,22 +91,22 @@ export const fetchStockRequests = (provinceId, status = 'pending', token) => {
 
 export const updateStockRequest = (requestId, status, token) => {
   return async (dispatch, getState) => {
-    try {
-      const response = await axios.patch(
-        apiUrl(routes.STOCK_REQUEST, requestId),
-        { status },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      dispatch(stockRequestActions.updateRequest(response.data));
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    // try {
+    const response = await axios.patch(
+      apiUrl(routes.STOCK_REQUEST, requestId),
+      { status },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    dispatch(stockRequestActions.updateRequest(response.data));
+    return response.data;
+    // } catch (error) {
+    //   throw error;
+    // }
   };
 };
 
@@ -134,50 +133,92 @@ export const fetchProvinces = (token) => {
 
 export const createProvince = (provinceData, token) => {
   return async (dispatch, getState) => {
-    try {
-      const response = await axios.post(apiUrl(routes.PROVINCE), provinceData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      dispatch(provinceActions.addProvince(response.data));
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    // try {
+    const response = await axios.post(apiUrl(routes.PROVINCE), provinceData, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    dispatch(provinceActions.addProvince(response.data));
+    return response.data;
+    // } catch (error) {
+    //   throw error;
+    // }
   };
 };
 
-export const updateProvince = (provinceId, provinceData, token) => {
+export const updateProvince = (province_id, provinceData, token) => {
   return async (dispatch, getState) => {
-    try {
-      const response = await axios.patch(apiUrl(routes.PROVINCE, provinceId), provinceData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      dispatch(provinceActions.updateProvince(response.data));
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    // try {
+    const response = await axios.patch(apiUrl(routes.PROVINCE, province_id), provinceData, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    dispatch(provinceActions.updateProvince(response.data));
+    return response.data;
+    // } catch (error) {
+    //   throw error;
+    // }
   };
 };
 
-export const deleteProvince = (provinceId, token) => {
+export const deleteProvince = (province_id, token) => {
   return async (dispatch, getState) => {
-    try {
-      await axios.delete(apiUrl(routes.PROVINCE, provinceId), {
+    // try {
+    await axios.delete(apiUrl(routes.PROVINCE, province_id), {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    dispatch(provinceActions.removeProvince(province_id));
+    // } catch (error) {
+    //   throw error;
+    // }
+  };
+};
+
+export const fetchCustomers = (token) => {
+  return async (dispatch, getState) => {
+    dispatch(customerActions.setLoading(true));
+
+    axios
+      .get('http://localhost:5000/api/users?role=customer', {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+      })
+      .then((response) => {
+        dispatch(customerActions.setCustomers(response.data.results || response.data));
+        dispatch(customerActions.setLoading(false));
+      })
+      .catch((error) => {
+        dispatch(customerActions.setError(error.message));
+        dispatch(customerActions.setLoading(false));
       });
-      dispatch(provinceActions.removeProvince(provinceId));
-    } catch (error) {
-      throw error;
-    }
+  };
+};
+
+export const fetchUsers = (token) => {
+  return async (dispatch, getState) => {
+    dispatch(userActions.setLoading(true));
+
+    axios
+      .get('http://localhost:5000/api/users?role=user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        dispatch(userActions.setUsers(response.data));
+        dispatch(userActions.setLoading(false));
+      })
+      .catch((error) => {
+        dispatch(userActions.setError(error.message));
+        dispatch(userActions.setLoading(false));
+      });
   };
 };

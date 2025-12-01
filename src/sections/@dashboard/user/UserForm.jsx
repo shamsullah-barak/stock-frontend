@@ -20,7 +20,16 @@ import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import Iconify from '../../../components/iconify';
 
-const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, handleAddUser, handleUpdateUser, provinces = [] }) => {
+const UserForm = ({
+  isUpdateForm,
+  isModalOpen,
+  handleCloseModal,
+  user,
+  setUser,
+  handleAddUser,
+  handleUpdateUser,
+  provinces = [],
+}) => {
   const style = {
     position: 'absolute',
     top: '50%',
@@ -109,8 +118,13 @@ const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, 
                 aria-labelledby="available-label"
                 defaultValue={user.role}
                 name="radio-buttons-group"
-                onChange={(e) => setUser({ ...user, role: e.target.value, provinceId: e.target.value === 'user' ? user.provinceId : undefined })}
-                // onChange={(e) => console.log({ e: e.target.value })}
+                onChange={(e) =>
+                  setUser({
+                    ...user,
+                    role: e.target.value,
+                    province_id: e.target.value === 'user' ? user.province_id : undefined,
+                  })
+                }
               >
                 <Grid container spacing={0}>
                   <Grid item xs={12} md={6} paddingRight={1}>
@@ -139,9 +153,9 @@ const UserForm = ({ isUpdateForm, isModalOpen, handleCloseModal, user, setUser, 
                 <Select
                   labelId="province-select-label"
                   id="province-select"
-                  value={user.provinceId || ''}
+                  value={user.province_id || ''}
                   label="Province"
-                  onChange={(e) => setUser({ ...user, provinceId: e.target.value })}
+                  onChange={(e) => setUser({ ...user, province_id: e.target.value })}
                 >
                   {provinces.map((province) => (
                     <MenuItem key={province.id || province._id} value={province.id || province._id}>
