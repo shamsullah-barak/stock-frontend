@@ -42,6 +42,7 @@ const SaleOrderPage = () => {
     buyer_info: '',
   });
   const [availableQuantity, setAvailableQuantity] = useState(0);
+  const [availableItemsInProvince, setAvailableItemsInProvince] = useState([]);
 
   useEffect(() => {
     if (tokens && tokens.access && tokens.access.token && user) {
@@ -67,6 +68,7 @@ const SaleOrderPage = () => {
       buyer_info: '',
     });
     setAvailableQuantity(0);
+    setAvailableItemsInProvince([]);
     setIsModalOpen(true);
   };
 
@@ -80,24 +82,55 @@ const SaleOrderPage = () => {
       buyer_info: '',
     });
     setAvailableQuantity(0);
+    setAvailableItemsInProvince([]);
+  };
+
+  const handleProvinceChange = (provinceId) => {
+    const selectedProvinceId = parseInt(provinceId, 10);
+    
+    // Find all stocks in the selected province
+    const stocksInProvince = stocks.filter(
+      (s) => (s.province_id === selectedProvinceId || s.current_location === selectedProvinceId) && (s.quantity || 0) > 0
+    );
+    
+    // Get unique items available in this province
+    const uniqueItems = [...new Set(stocksInProvince.map((s) => s.item_type))];
+    setAvailableItemsInProvince(uniqueItems);
+    
+    // Reset item selection when province changes
+    setOrderData({
+      ...orderData,
+      receiver_province_id: provinceId,
+      item: '',
+      quantity: '',
+    });
+    setAvailableQuantity(0);
   };
 
   const handleItemChange = (itemType) => {
-    // Find all stocks with this item type
-    const matchingStocks = stocks.filter((s) => s.item_type === itemType);
+    if (!orderData.receiver_province_id) {
+      toast.error('Please select a province first');
+      return;
+    }
     
-    if (matchingStocks.length > 0) {
-      // Get total available quantity across all provinces
-      const totalQuantity = matchingStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
-      setAvailableQuantity(totalQuantity);
-      
-      // Set the first stock's province as default (user can change it)
-      const firstStock = matchingStocks[0];
+    const selectedProvinceId = parseInt(orderData.receiver_province_id, 10);
+    
+    // Find stock of this item in the selected province
+    const stockInProvince = stocks.find(
+      (s) =>
+        s.item_type === itemType &&
+        (s.province_id === selectedProvinceId || s.current_location === selectedProvinceId)
+    );
+    
+    if (stockInProvince) {
+      setAvailableQuantity(stockInProvince.quantity || 0);
       setOrderData({
         ...orderData,
         item: itemType,
-        receiver_province_id: firstStock.province_id || firstStock.current_location || '',
+        quantity: '',
       });
+    } else {
+      toast.error('This item is not available in the selected province');
     }
   };
 
@@ -153,7 +186,9 @@ const SaleOrderPage = () => {
     }
   };
 
-  const uniqueItems = [...new Set(stocks.map((s) => s.item_type))];
+  // Get provinces where customer has stock
+  const provincesWithStock = [...new Set(stocks.map((s) => s.province_id || s.current_location).filter(Boolean))];
+  const availableProvinces = provinces.filter((p) => provincesWithStock.includes(p.id || p._id));
 
   return (
     <>
@@ -214,97 +249,109 @@ const SaleOrderPage = () => {
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
             <FormControl fullWidth required>
-              <InputLabel>Select Item</InputLabel>
+              <InputLabel>Select Province</InputLabel>
               <Select
-                value={orderData.item}
-                label="Select Item"
-                onChange={(e) => handleItemChange(e.target.value)}
+                value={orderData.receiver_province_id}
+                label="Select Province"
+                onChange={(e) => handleProvinceChange(e.target.value)}
               >
-                {uniqueItems.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    {item}
-                  </MenuItem>
-                ))}
+                {availableProvinces.map((province) => {
+                  const provinceId = province.id || province._id;
+                  const stocksInProvince = stocks.filter(
+                    (s) => (s.province_id === provinceId || s.current_location === provinceId) && (s.quantity || 0) > 0
+                  );
+                  const totalItems = stocksInProvince.length;
+                  return (
+                    <MenuItem key={provinceId} value={provinceId}>
+                      {province.name} ({totalItems} {totalItems === 1 ? 'item' : 'items'} available)
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
 
-            {orderData.item && (
+            {orderData.receiver_province_id && (
               <>
-                <Alert severity="info">
-                  Available Quantity: <strong>{availableQuantity}</strong>
-                </Alert>
+                {availableItemsInProvince.length > 0 ? (
+                  <>
+                    <FormControl fullWidth required>
+                      <InputLabel>Select Item</InputLabel>
+                      <Select
+                        value={orderData.item}
+                        label="Select Item"
+                        onChange={(e) => handleItemChange(e.target.value)}
+                      >
+                        {availableItemsInProvince.map((item) => {
+                          const selectedProvinceId = parseInt(orderData.receiver_province_id, 10);
+                          const stockInProvince = stocks.find(
+                            (s) =>
+                              s.item_type === item &&
+                              (s.province_id === selectedProvinceId || s.current_location === selectedProvinceId)
+                          );
+                          const quantity = stockInProvince?.quantity || 0;
+                          return (
+                            <MenuItem key={item} value={item}>
+                              {item} (Available: {quantity})
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
 
-                <FormControl fullWidth required>
-                  <InputLabel>Province (Where Stock Is Located)</InputLabel>
-                  <Select
-                    value={orderData.receiver_province_id}
-                    label="Province (Where Stock Is Located)"
-                    onChange={(e) => {
-                      const selectedProvinceId = parseInt(e.target.value, 10);
-                      // Validate stock exists in selected province
-                      const stockInProvince = stocks.find(
-                        (s) =>
-                          s.item_type === orderData.item &&
-                          (s.province_id === selectedProvinceId || s.current_location === selectedProvinceId)
-                      );
-                      if (stockInProvince) {
-                        setAvailableQuantity(stockInProvince.quantity || 0);
-                        setOrderData({ ...orderData, receiver_province_id: e.target.value });
-                      } else {
-                        toast.error('You do not have stock of this item in the selected province');
-                      }
-                    }}
-                  >
-                    {stocks
-                      .filter((s) => s.item_type === orderData.item)
-                      .map((stock) => {
-                        const provinceId = stock.province_id || stock.current_location;
-                        const province = provinces.find((p) => (p.id || p._id) === provinceId);
-                        return province ? (
-                          <MenuItem key={province.id || province._id} value={province.id || province._id}>
-                            {province.name} (Available: {stock.quantity})
-                          </MenuItem>
-                        ) : null;
-                      })}
-                  </Select>
-                </FormControl>
+                    {orderData.item && (
+                      <>
+                        <Alert severity="info">
+                          Available Quantity: <strong>{availableQuantity}</strong>
+                        </Alert>
 
-                <TextField
-                  fullWidth
-                  label="Quantity"
-                  type="number"
-                  value={orderData.quantity}
-                  onChange={(e) => setOrderData({ ...orderData, quantity: e.target.value })}
-                  required
-                  inputProps={{ min: 1, max: availableQuantity }}
-                  helperText={`Maximum: ${availableQuantity}`}
-                />
+                        <TextField
+                          fullWidth
+                          label="Quantity"
+                          type="number"
+                          value={orderData.quantity}
+                          onChange={(e) => setOrderData({ ...orderData, quantity: e.target.value })}
+                          required
+                          inputProps={{ min: 1, max: availableQuantity }}
+                          helperText={`Maximum: ${availableQuantity}`}
+                        />
 
-                <TextField
-                  fullWidth
-                  label="Price (Amount to Receive)"
-                  type="number"
-                  value={orderData.price}
-                  onChange={(e) => setOrderData({ ...orderData, price: e.target.value })}
-                  required
-                  inputProps={{ min: 0, step: 0.01 }}
-                />
+                        <TextField
+                          fullWidth
+                          label="Price (Amount to Receive)"
+                          type="number"
+                          value={orderData.price}
+                          onChange={(e) => setOrderData({ ...orderData, price: e.target.value })}
+                          required
+                          inputProps={{ min: 0, step: 0.01 }}
+                        />
 
-                <TextField
-                  fullWidth
-                  label="Buyer Information (Optional)"
-                  multiline
-                  rows={3}
-                  value={orderData.buyer_info}
-                  onChange={(e) => setOrderData({ ...orderData, buyer_info: e.target.value })}
-                />
+                        <TextField
+                          fullWidth
+                          label="Buyer Information (Optional)"
+                          multiline
+                          rows={3}
+                          value={orderData.buyer_info}
+                          onChange={(e) => setOrderData({ ...orderData, buyer_info: e.target.value })}
+                        />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <Alert severity="warning">
+                    No stock available in the selected province. Please select a different province.
+                  </Alert>
+                )}
               </>
             )}
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button onClick={handleCreateSaleOrder} variant="contained" disabled={!orderData.item}>
+          <Button
+            onClick={handleCreateSaleOrder}
+            variant="contained"
+            disabled={!orderData.receiver_province_id || !orderData.item || !orderData.quantity || !orderData.price}
+          >
             Create Sale Order
           </Button>
         </DialogActions>
