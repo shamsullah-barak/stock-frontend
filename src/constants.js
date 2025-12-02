@@ -6,6 +6,8 @@ const routes = {
   STOCK: 'stocks',
   STOCK_REQUEST: 'stock-requests',
   PROVINCE: 'provinces',
+  ORDER: 'orders',
+  TRANSACTION: 'transactions',
 };
 
 const methods = {
@@ -17,4 +19,4 @@ const methods = {
 
 const apiUrl = (route, id = '') => `${backendApiUrl}/${route}${id && `/${id}`}`;
 
-module.exports = { routes, methods, apiUrl };
+module.exports = { routes, methods, apiUrl, backendApiUrl };

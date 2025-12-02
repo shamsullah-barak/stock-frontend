@@ -1,27 +1,35 @@
 import axios from 'axios';
-import { apiUrl, routes } from '../../constants';
+import { apiUrl, routes, backendApiUrl } from '../../constants';
 import { categoryActions } from './categories';
 import { stockActions } from './stocks';
 import { stockRequestActions } from './stockRequests';
 import { provinceActions } from './provinces';
 import { customerActions } from './customers';
 import { userActions } from './users';
+import { orderActions } from './orders';
 
 export const fetchCategories = () => {
   return async (dispatch, getState) => {
-    // try {
-    const response = await axios.get(apiUrl(routes.CATEGORY), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const data = response.data.map((item) => {
-      return {
-        ...item,
-        path: `/category/${item.id}`,
-      };
-    });
-    dispatch(categoryActions.setCategories(data));
+    try {
+      // TODO: Add CATEGORY route to backend or remove this if not needed
+      // For now, we'll skip the API call to prevent errors
+      // const response = await axios.get(apiUrl(routes.CATEGORY), {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+      // const data = response.data.map((item) => {
+      //   return {
+      //     ...item,
+      //     path: `/category/${item.id}`,
+      //   };
+      // });
+      // dispatch(categoryActions.setCategories(data));
+      dispatch(categoryActions.setCategories([]));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      dispatch(categoryActions.setCategories([]));
+    }
   };
 };
 
@@ -31,7 +39,7 @@ export const fetchCustomerStocks = (customerId, province_id, token) => {
     try {
       dispatch(stockActions.setLoading(true));
       const response = await axios.get(apiUrl(routes.STOCK), {
-        params: { customerId, province_id },
+        params: { customer_id: customerId, province_id },
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -222,3 +230,140 @@ export const fetchUsers = (token) => {
       });
   };
 };
+
+// Order Actions
+export const createOrder = (orderData, token) => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch(orderActions.setLoading(true));
+      const response = await axios.post(apiUrl(routes.ORDER), orderData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(orderActions.addOrder(response.data));
+      dispatch(orderActions.setLoading(false));
+      return response.data;
+    } catch (error) {
+      dispatch(orderActions.setError(error.message));
+      dispatch(orderActions.setLoading(false));
+      throw error;
+    }
+  };
+};
+
+export const fetchOrders = (token, filters = {}) => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch(orderActions.setLoading(true));
+      const response = await axios.get(apiUrl(routes.ORDER), {
+        params: filters,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(orderActions.setOrders(response.data.results || response.data));
+      dispatch(orderActions.setLoading(false));
+    } catch (error) {
+      dispatch(orderActions.setError(error.message));
+      dispatch(orderActions.setLoading(false));
+      throw error;
+    }
+  };
+};
+
+export const fetchSentOrders = (token, filters = {}) => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch(orderActions.setLoading(true));
+      const response = await axios.get(`${backendApiUrl}/${routes.ORDER}/sent`, {
+        params: filters,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(orderActions.setSentOrders(response.data.results || response.data));
+      dispatch(orderActions.setLoading(false));
+    } catch (error) {
+      dispatch(orderActions.setError(error.message));
+      dispatch(orderActions.setLoading(false));
+      throw error;
+    }
+  };
+};
+
+export const fetchReceivedOrders = (token, filters = {}) => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch(orderActions.setLoading(true));
+      const response = await axios.get(`${backendApiUrl}/${routes.ORDER}/received`, {
+        params: filters,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(orderActions.setReceivedOrders(response.data.results || response.data));
+      dispatch(orderActions.setLoading(false));
+    } catch (error) {
+      dispatch(orderActions.setError(error.message));
+      dispatch(orderActions.setLoading(false));
+      throw error;
+    }
+  };
+};
+
+export const acceptOrder = (orderId, token) => {
+  return async (dispatch, getState) => {
+    const response = await axios.patch(
+      apiUrl(routes.ORDER, `${orderId}/accept`),
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    dispatch(orderActions.updateOrder(response.data));
+    return response.data;
+  };
+};
+
+export const rejectOrder = (orderId, token) => {
+  return async (dispatch, getState) => {
+    const response = await axios.patch(
+      apiUrl(routes.ORDER, `${orderId}/reject`),
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    dispatch(orderActions.updateOrder(response.data));
+    return response.data;
+  };
+};
+
+export const completeOrder = (orderId, token) => {
+  return async (dispatch, getState) => {
+    const response = await axios.patch(
+      apiUrl(routes.ORDER, `${orderId}/complete`),
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    dispatch(orderActions.updateOrder(response.data));
+    return response.data;
+  };
+};
+

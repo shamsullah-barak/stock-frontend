@@ -36,7 +36,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
 import Label from '../../../components/label';
-import { fetchStockRequests, updateStockRequest } from '../../../store/slices/action';
+import { fetchStockRequests, updateStockRequest, fetchCustomers } from '../../../store/slices/action';
 import { apiUrl, routes } from '../../../constants';
 import { applySortFilter, getComparator } from '../../../utils/tableOperations';
 import StockForm from './stock.form';
@@ -44,12 +44,9 @@ import StockForm from './stock.form';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  // { id: 'type', label: 'Type', alignRight: false },
   { id: 'customerName', label: 'Customer', alignRight: false },
   { id: 'itemName', label: 'Item Name', alignRight: false },
   { id: 'quantity', label: 'Quantity', alignRight: false },
-  // { id: 'unit', label: 'Unit', alignRight: false },
-  // { id: 'notes', label: 'Notes', alignRight: false },
   { id: 'date', label: 'Date', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
   { id: 'actions', label: 'Actions', alignRight: true },
@@ -58,9 +55,10 @@ const TABLE_HEAD = [
 // ----------------------------------------------------------------------
 
 const ManageStocks = () => {
-  const { tokens } = useAuth();
+  const { tokens, user } = useAuth();
   const dispatch = useDispatch();
   const { requests, loading } = useSelector((state) => state.stockRequests);
+  const { customers } = useSelector((state) => state.customers);
   // const loading = false;
 
   // State variables
@@ -75,18 +73,20 @@ const ManageStocks = () => {
   const [actionType, setActionType] = useState(''); // 'approve' or 'reject'
 
   // Load data on initial page load
-  // useEffect(() => {
-  //   if (stock && stock.province_id) {
-  //     loadRequests();
-  //   }
-  // }, [stock, statusFilter]);
+  useEffect(() => {
+    if (tokens && tokens.access && tokens.access.token) {
+      loadRequests();
+      // Load customers for fallback name lookup
+      dispatch(fetchCustomers(tokens.access.token));
+    }
+  }, [tokens, statusFilter, dispatch]);
 
-  // const loadRequests = () => {
-  //   if (stock && stock.province_id && tokens) {
-  //     const status = statusFilter === 'all' ? undefined : statusFilter;
-  //     dispatch(fetchStockRequests(stock.province_id, status, tokens.access.token));
-  //   }
-  // };
+  const loadRequests = () => {
+    if (tokens && tokens.access && tokens.access.token) {
+      const status = statusFilter === 'all' ? undefined : statusFilter;
+      dispatch(fetchStockRequests(tokens.access.token, status));
+    }
+  };
 
   const handleOpenConfirmDialog = (request, action) => {
     setSelectedRequest(request);
@@ -135,7 +135,29 @@ const ManageStocks = () => {
   //   setPage(0);
   // };
 
+  // Helper function to get customer name
+  const getCustomerName = (request) => {
+    // Try relationship first
+    if (request.Customer?.name) return request.Customer.name;
+    if (request.customer?.name) return request.customer.name;
+    
+    // Fallback to customers list
+    if (request.customer_id && customers && customers.length > 0) {
+      const customer = customers.find((c) => (c.id || c._id) === request.customer_id);
+      if (customer?.name) return customer.name;
+    }
+    
+    return 'N/A';
+  };
+
   const filteredRequests = applySortFilter(requests, getComparator(order, orderBy), filterName);
+
+  // Only receiver province user (or admin) can approve/reject
+  const canActOnRequest = (request) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    return user.role === 'province_user' && request.receiver_id === user.id;
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -199,6 +221,10 @@ const ManageStocks = () => {
   // };
 
   const getAllStocks = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     axios
       .get(apiUrl(routes.STOCK), {
         headers: {
@@ -216,6 +242,10 @@ const ManageStocks = () => {
   };
 
   const updateStock = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     if (stock.role === 'stock' && !stock.province_id) {
       toast.error('Please select a province for province stock');
       return;
@@ -297,30 +327,26 @@ const ManageStocks = () => {
                       {filteredRequests.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((request) => (
                         <TableRow hover key={request.id || request._id} tabIndex={-1}>
                           <TableCell align="left">
-                            <Chip
-                              label={request.type === 'add' ? 'Add' : 'Remove'}
-                              color={getTypeColor(request.type)}
-                              size="small"
-                            />
+                            {getCustomerName(request)}
                           </TableCell>
-                          <TableCell align="left">{request.customerName || request.customer?.name || 'N/A'}</TableCell>
-                          <TableCell align="left">{request.item_name}</TableCell>
+                          <TableCell align="left">{request.item_name || 'N/A'}</TableCell>
                           <TableCell align="left">
                             <Chip label={request.quantity} color="primary" variant="outlined" />
                           </TableCell>
-
-                          {/* <TableCell align="left">
-                            {request.createdAt
+                          <TableCell align="left">
+                            {request.created_at
+                              ? new Date(request.created_at).toLocaleDateString()
+                              : request.createdAt
                               ? new Date(request.createdAt).toLocaleDateString()
-                              : new Date(request.date).toLocaleDateString()}
-                          </TableCell> */}
+                              : 'N/A'}
+                          </TableCell>
                           <TableCell align="left">
                             <Label color={getStatusColor(request.status)}>
                               {request.status?.toUpperCase() || 'PENDING'}
                             </Label>
                           </TableCell>
                           <TableCell align="right">
-                            {request.status === 'pending' && (
+                            {request.status === 'pending' && canActOnRequest(request) && (
                               <Stack direction="row" spacing={1} justifyContent="flex-end">
                                 <IconButton
                                   color="success"
@@ -382,11 +408,9 @@ const ManageStocks = () => {
                 />
               </Box>
               <Box>
-                <Typography variant="subtitle2" gutterBottom>
-                  Customer:
-                </Typography>
+                <Typography variant="subtitle2" gutterBottom>Customer:</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {selectedRequest.customerName || selectedRequest.customer?.name || 'N/A'}
+                  {getCustomerName(selectedRequest)}
                 </Typography>
               </Box>
               <Box>
@@ -440,8 +464,8 @@ const ManageStocks = () => {
         id={selectedStockId}
         stock={stock}
         setStocks={setStock}
-        // handleAddStock={addStock}
         handleUpdateStock={updateStock}
+        onStockAdded={loadRequests}
       />
     </>
   );

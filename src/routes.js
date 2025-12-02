@@ -7,6 +7,12 @@ import { useAuth } from './hooks/useAuth';
 import Stocks from './sections/@dashboard/stocks';
 import ManageStocks from './sections/@dashboard/stocks/manageStocks';
 import ProvincePage from './sections/@dashboard/provinces/ProvincePage';
+import SendOrdersPage from './sections/@dashboard/orders/SendOrdersPage';
+import ReceiveOrdersPage from './sections/@dashboard/orders/ReceiveOrdersPage';
+import OrdersPage from './sections/@dashboard/orders/OrdersPage';
+import SaleOrderPage from './sections/@dashboard/customer/SaleOrderPage';
+import MyOrdersPage from './sections/@dashboard/customer/MyOrdersPage';
+import ProvinceStockPage from './sections/@dashboard/stocks/ProvinceStockPage';
 
 // ----------------------------------------------------------------------
 
@@ -20,7 +26,10 @@ export default function Router() {
       children: [
         { path: 'users', element: <UsersPage /> },
         { path: 'provinces', element: <ProvincePage /> },
-        { path: 'manage-stocks', element: <Stocks /> },
+        { path: 'province-stocks', element: <ProvinceStockPage /> },
+        { path: 'orders', element: <OrdersPage /> },
+        { path: 'send-orders', element: <SendOrdersPage /> },
+        { path: 'receive-orders', element: <ReceiveOrdersPage /> },
       ],
     },
     {
@@ -41,8 +50,12 @@ export default function Router() {
     {
       path: '/',
       element: <MainDashboard />,
-
-      children: [{ path: 'manage-stocks', element: <ManageStocks /> }],
+      children: [
+        { path: 'province-stocks', element: <ProvinceStockPage /> },
+        { path: 'send-orders', element: <SendOrdersPage /> },
+        { path: 'receive-orders', element: <ReceiveOrdersPage /> },
+        { path: 'orders', element: <OrdersPage /> },
+      ],
     },
     {
       path: 'login',
@@ -62,7 +75,11 @@ export default function Router() {
     {
       path: '/',
       element: <MainDashboard />,
-      children: [{ path: 'stocks', element: <Stocks /> }],
+      children: [
+        { path: 'stocks', element: <Stocks /> },
+        { path: 'sale-order', element: <SaleOrderPage /> },
+        { path: 'my-orders', element: <MyOrdersPage /> },
+      ],
     },
     {
       path: 'login',

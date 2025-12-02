@@ -10,9 +10,24 @@ import { FiBookOpen, FiCheckCircle, FiUsers, FiDownloadCloud, FiChevronDown, FiC
 
 export const userNavConfig = [
   {
-    title: 'Manage Stock Requests',
-    path: '/manage-stocks',
+    title: 'Province Stock',
+    path: '/province-stocks',
     icon: <FiUsers />,
+  },
+  {
+    title: 'Send Orders',
+    path: '/send-orders',
+    icon: <FiDownloadCloud />,
+  },
+  {
+    title: 'Receive Orders',
+    path: '/receive-orders',
+    icon: <FiCheckCircle />,
+  },
+  {
+    title: 'All Orders',
+    path: '/orders',
+    icon: <FiBookOpen />,
   },
 ];
 
@@ -28,9 +43,24 @@ export const adminNavConfig = [
     icon: <FiUsers />,
   },
   {
-    title: 'Manage Stocks',
-    path: '/manage-stocks',
+    title: 'Province Stock',
+    path: '/province-stocks',
     icon: <FiUsers />,
+  },
+  {
+    title: 'Send Orders',
+    path: '/send-orders',
+    icon: <FiDownloadCloud />,
+  },
+  {
+    title: 'Receive Orders',
+    path: '/receive-orders',
+    icon: <FiCheckCircle />,
+  },
+  {
+    title: 'All Orders',
+    path: '/orders',
+    icon: <FiBookOpen />,
   },
 ];
 
@@ -39,6 +69,16 @@ export const customerNavConfig = [
     title: 'My Stocks',
     path: '/stocks',
     icon: <FiUsers />,
+  },
+  {
+    title: 'Create Sale Order',
+    path: '/sale-order',
+    icon: <FiDownloadCloud />,
+  },
+  {
+    title: 'My Orders',
+    path: '/my-orders',
+    icon: <FiBookOpen />,
   },
 ];
 

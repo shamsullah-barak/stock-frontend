@@ -5,20 +5,26 @@ import axios from 'axios';
 import { useAuth } from '../../../hooks/useAuth';
 
 export default function AccountPopover() {
-  const { user, tokens } = useAuth();
-  const { logout } = useAuth();
+  const { user, tokens, logout } = useAuth();
   const [open, setOpen] = useState(null);
 
   const logoutUser = () => {
     handleClose();
+
+    // If there's no refresh token (already logged out / invalid session), just clear client state
+    if (!tokens || !tokens.refresh || !tokens.refresh.token) {
+      logout();
+      return;
+    }
+
     axios
       .post(`http://localhost:5000/api/auth/logout`, { refreshToken: tokens.refresh.token })
-      .then((response) => {
+      .then(() => {
         logout();
       })
-      .catch((error) => {
-        // handle error
-        alert(error);
+      .catch(() => {
+        // Even if server logout fails, ensure client is logged out
+        logout();
       });
   };
 

@@ -77,11 +77,11 @@ const ProvincePage = () => {
   // Load data on initial page load
   useEffect(() => {
     loadProvinces();
-  }, []);
+  }, [tokens, dispatch]);
 
   // API operations
   const loadProvinces = () => {
-    if (tokens) {
+    if (tokens && tokens.access && tokens.access.token) {
       dispatch(fetchProvinces(tokens.access.token))
         .then(() => {
           setIsTableLoading(false);
@@ -90,10 +90,16 @@ const ProvincePage = () => {
           toast.error(error.response?.data?.message || 'Error loading provinces');
           setIsTableLoading(false);
         });
+    } else {
+      setIsTableLoading(false);
     }
   };
 
   const addProvince = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     if (!province.name || !province.code) {
       toast.error('Please fill in all required fields');
       return;
@@ -112,6 +118,10 @@ const ProvincePage = () => {
   };
 
   const updateProvinceHandler = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     if (!province.name || !province.code) {
       toast.error('Please fill in all required fields');
       return;
@@ -131,6 +141,10 @@ const ProvincePage = () => {
   };
 
   const deleteProvinceHandler = (province_id) => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     dispatch(deleteProvince(province_id, tokens.access.token))
       .then(() => {
         toast.success('Province deleted');

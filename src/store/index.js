@@ -6,6 +6,7 @@ import stockRequestReducer from './slices/stockRequests';
 import provinceReducer from './slices/provinces';
 import customerReducer from './slices/customers';
 import userReducer from './slices/users';
+import orderReducer from './slices/orders';
 
 const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
     provinces: provinceReducer,
     customers: customerReducer,
     users: userReducer,
+    orders: orderReducer,
   },
 });
 

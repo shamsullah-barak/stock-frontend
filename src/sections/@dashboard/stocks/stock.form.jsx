@@ -37,12 +37,16 @@ const style = {
   p: 4,
 };
 
-const StockForm = ({ isUpdateForm, isModalOpen, handleCloseModal, handleUpdateStock }) => {
+const StockForm = ({ isUpdateForm, isModalOpen, handleCloseModal, handleUpdateStock, onStockAdded }) => {
   const { tokens, user } = useAuth();
 
   const addStock = () => {
-    if (stock.role === 'stock' && !stock.province_id) {
-      toast.error('Please select a province for province stock');
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
+    if (!stock.customer_id || !stock.receiver_id || !stock.item_name || !stock.quantity) {
+      toast.error('Please fill in all required fields');
       return;
     }
     axios
@@ -54,11 +58,20 @@ const StockForm = ({ isUpdateForm, isModalOpen, handleCloseModal, handleUpdateSt
       .then((response) => {
         toast.success('Stock request added');
         handleCloseModal();
-        // getAllStocks();
-        // clearForm();
+        // Reset form
+        setStock({
+          receiver_id: '',
+          customer_id: '',
+          item_name: '',
+          quantity: 1,
+        });
+        // Refresh the stock requests list
+        if (onStockAdded) {
+          onStockAdded();
+        }
       })
       .catch((error) => {
-        toast.error(error.response.data.message ?? 'Something went wrong, please try again');
+        toast.error(error.response?.data?.message ?? 'Something went wrong, please try again');
       });
   };
 
@@ -97,11 +110,17 @@ const StockForm = ({ isUpdateForm, isModalOpen, handleCloseModal, handleUpdateSt
                     label="Receiver"
                     onChange={(e) => setStock({ ...stock, receiver_id: e.target.value })}
                   >
-                    {users.map((user) => (
-                      <MenuItem key={user.id || user._id} value={user.id || user._id}>
-                        {user.name} ({user.code})
-                      </MenuItem>
-                    ))}
+                    {users
+                      // Do not allow selecting the current logged-in province user as receiver
+                      .filter(
+                        (receiver) =>
+                          (receiver.id || receiver._id) !== (user?.id || user?._id)
+                      )
+                      .map((receiver) => (
+                        <MenuItem key={receiver.id || receiver._id} value={receiver.id || receiver._id}>
+                          {receiver.name} ({receiver.code})
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
@@ -190,6 +209,7 @@ StockForm.propTypes = {
   stock: PropTypes.object,
   setStock: PropTypes.func,
   handleUpdateStock: PropTypes.func,
+  onStockAdded: PropTypes.func,
   provinces: PropTypes.array,
 };
 

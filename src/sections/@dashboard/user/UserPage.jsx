@@ -87,15 +87,19 @@ const UserPage = () => {
 
   // Load data on initial page load
   useEffect(() => {
-    getAllUsers();
-    if (tokens) {
+    if (tokens && tokens.access && tokens.access.token) {
+      getAllUsers();
       dispatch(fetchProvinces(tokens.access.token));
     }
-  }, []);
+  }, [tokens, dispatch]);
 
   // API operations
 
   const getAllUsers = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     axios
       .get(apiUrl(routes.USER), {
         headers: {
@@ -109,11 +113,19 @@ const UserPage = () => {
       })
       .catch((error) => {
         // handle error
-        toast.error(error.response.message ?? 'error getting users');
+        if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+          toast.error('Cannot connect to server. Please make sure the backend is running.');
+        } else {
+          toast.error(error.response?.data?.message || error.response?.message || 'Error getting users');
+        }
       });
   };
 
   const addUser = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     if (user.role === 'user' && !user.province_id) {
       toast.error('Please select a province for province user');
       return;
@@ -131,11 +143,19 @@ const UserPage = () => {
         clearForm();
       })
       .catch((error) => {
-        toast.error(error.response.data.message ?? 'Something went wrong, please try again');
+        if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+          toast.error('Cannot connect to server. Please make sure the backend is running.');
+        } else {
+          toast.error(error.response?.data?.message || 'Something went wrong, please try again');
+        }
       });
   };
 
   const updateUser = () => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     if (user.role === 'user' && !user.province_id) {
       toast.error('Please select a province for province user');
       return;
@@ -154,11 +174,19 @@ const UserPage = () => {
         clearForm();
       })
       .catch((error) => {
-        toast.error(error.response.data.message ?? 'Something went wrong, please try again');
+        if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+          toast.error('Cannot connect to server. Please make sure the backend is running.');
+        } else {
+          toast.error(error.response?.data?.message || 'Something went wrong, please try again');
+        }
       });
   };
 
   const deleteUser = (userId) => {
+    if (!tokens || !tokens.access || !tokens.access.token) {
+      toast.error('Authentication required');
+      return;
+    }
     axios
       .delete(apiUrl(routes.USER, userId), {
         headers: {
@@ -173,7 +201,11 @@ const UserPage = () => {
         getAllUsers();
       })
       .catch((error) => {
-        toast.error(error.response.data.message ?? 'Something went wrong, please try again');
+        if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+          toast.error('Cannot connect to server. Please make sure the backend is running.');
+        } else {
+          toast.error(error.response?.data?.message || 'Something went wrong, please try again');
+        }
       });
   };
 

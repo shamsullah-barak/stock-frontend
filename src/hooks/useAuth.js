@@ -10,31 +10,35 @@ export const AuthProvider = ({ children }) => {
   const [tokens, setTokens] = useLocalStorage('tokens', null);
   const navigate = useNavigate();
 
-  const login = async (data) => {
-    setUser(data?.user);
-    setTokens(data?.tokens);
-    // navigate('/users', { replace: true });
-    if (user) {
-      if (user.role === 'admin') {
-        return navigate('/users', { replace: true });
-      }
+  const login = (data) => {
+    const nextUser = data?.user;
+    const nextTokens = data?.tokens;
 
-      if (user.role === 'customer') {
-        // return <Navigate to={'/stocks'} replace />;
-        return navigate('/stocks', { replace: true });
-      }
+    setUser(nextUser);
+    setTokens(nextTokens);
 
-      if (user.role === 'user') {
-        // return <Navigate to={'/manage-stocks'} replace />;
-        navigate('/manage-stocks', { replace: true });
-      }
+    // Redirect based on the *new* user's role
+    if (nextUser?.role === 'admin') {
+      navigate('/users', { replace: true });
+      return;
+    }
+    if (nextUser?.role === 'customer') {
+      navigate('/stocks', { replace: true });
+      return;
+    }
+    if (nextUser?.role === 'user') {
+      navigate('/province-stocks', { replace: true });
+      return;
     }
 
+    // Fallback
     navigate('/users', { replace: true });
   };
 
   const logout = () => {
+    // Clear both user and tokens so UI & API checks stay in sync
     setUser(null);
+    setTokens(null);
     navigate('/login', { replace: true });
   };
 

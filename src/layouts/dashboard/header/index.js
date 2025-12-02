@@ -55,13 +55,16 @@ export default function Header({ onOpenNav }) {
 
   useEffect(() => {
     const loadData = () => {
-      dispatch(fetchProvinces(tokens.access.token));
-      dispatch(fetchCustomers(tokens.access.token));
-      dispatch(fetchUsers(tokens.access.token));
-      dispatch(fetchStockRequests(tokens.access.token));
+      // Only load data if user is authenticated and tokens exist
+      if (tokens && tokens.access && tokens.access.token) {
+        dispatch(fetchProvinces(tokens.access.token));
+        dispatch(fetchCustomers(tokens.access.token));
+        dispatch(fetchUsers(tokens.access.token));
+        dispatch(fetchStockRequests(tokens.access.token));
+      }
     };
     loadData();
-  });
+  }, [dispatch, tokens]);
 
   return (
     <StyledRoot>
