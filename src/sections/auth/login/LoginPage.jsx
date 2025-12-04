@@ -72,7 +72,7 @@ export default function LoginPage() {
       toast.error('Please enter email and password');
     } else {
       axios
-        .post(`http://localhost:5000/api/auth/login`, { email, password })
+        .post(`https://stock-backend-l9bt.onrender.com/api/auth/login`, { email, password })
         .then((response) => {
           // handle success
           if (response.status === 200) {

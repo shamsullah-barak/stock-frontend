@@ -1,4 +1,4 @@
-const backendApiUrl = 'http://localhost:5000/api';
+const backendApiUrl = 'https://stock-backend-l9bt.onrender.com/api';
 
 const routes = {
   AUTH: 'auth',

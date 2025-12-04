@@ -50,7 +50,7 @@ const StockForm = ({ isUpdateForm, isModalOpen, handleCloseModal, handleUpdateSt
       return;
     }
     axios
-      .post('http://localhost:5000/api/stock-requests', stock, {
+      .post('https://stock-backend-l9bt.onrender.com/api/stock-requests', stock, {
         headers: {
           Authorization: `Bearer ${tokens.access.token}`,
         },

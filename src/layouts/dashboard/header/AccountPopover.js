@@ -18,7 +18,7 @@ export default function AccountPopover() {
     }
 
     axios
-      .post(`http://localhost:5000/api/auth/logout`, { refreshToken: tokens.refresh.token })
+      .post(`https://stock-backend-l9bt.onrender.com/api/auth/logout`, { refreshToken: tokens.refresh.token })
       .then(() => {
         logout();
       })

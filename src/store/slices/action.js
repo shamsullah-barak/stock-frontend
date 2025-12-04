@@ -194,7 +194,7 @@ export const fetchCustomers = (token) => {
     dispatch(customerActions.setLoading(true));
 
     axios
-      .get('http://localhost:5000/api/users?role=customer', {
+      .get('https://stock-backend-l9bt.onrender.com/api/users?role=customer', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -215,7 +215,7 @@ export const fetchUsers = (token) => {
     dispatch(userActions.setLoading(true));
 
     axios
-      .get('http://localhost:5000/api/users?role=user', {
+      .get('https://stock-backend-l9bt.onrender.com/api/users?role=user', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
